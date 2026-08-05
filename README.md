@@ -1,121 +1,145 @@
 # Terminal Chess
 
-Implementação de um jogo de xadrez para terminal em Java, com foco em modelagem orientada a objetos e regras clássicas da partida. O projeto executa localmente para dois jogadores no mesmo terminal e separa a aplicação em três camadas principais: interface de console, motor de xadrez e infraestrutura genérica de tabuleiro.
+![Java](https://img.shields.io/badge/Java-17%2B-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-22C55E?style=flat-square)
+![Interface](https://img.shields.io/badge/Interface-Terminal-334155?style=flat-square)
 
-## Visão Geral
+A complete, two-player chess game built in Java for the command line. The project focuses on clean object-oriented design, rule enforcement, and a lightweight terminal experience with no external dependencies.
 
-O jogo apresenta:
+## Highlights
 
-- tabuleiro 8x8 renderizado no terminal com destaque visual para movimentos possíveis;
-- entrada por coordenadas no formato algébrico (`a1` a `h8`);
-- controle de turnos entre brancas e pretas;
-- validação de jogadas inválidas com mensagens de erro;
-- captura de peças e exibição do material capturado;
-- suporte a `check`, `checkmate`, `castling`, `en passant` e promoção de peão.
+- Full 8×8 chessboard rendered directly in the terminal
+- Algebraic coordinate input, from `a1` to `h8`
+- Turn management for White and Black
+- Visual highlighting of legal moves
+- Move validation and helpful error messages
+- Captured-piece tracking
+- Check and checkmate detection
+- Castling, en passant, and pawn promotion
 
-O ponto de entrada da aplicação é a classe [`Program.java`](/home/lorenzo/desenvolvimento/terminal-chess/src/application/Program.java), que conduz o loop principal da partida.
+## Requirements
 
-## Arquitetura
+- [JDK 17](https://adoptium.net/) or newer
+- A terminal with ANSI color support
 
-O código está organizado por responsabilidade:
+> [!TIP]
+> Windows Terminal, Git Bash, and most Unix-like terminals provide the best visual experience. Some IDE consoles may not render colors or screen clearing correctly.
 
-- [`src/application`](/home/lorenzo/desenvolvimento/terminal-chess/src/application): camada de interface de console. Lê entradas, limpa a tela, imprime o tabuleiro e apresenta o estado da partida.
-- [`src/chess`](/home/lorenzo/desenvolvimento/terminal-chess/src/chess): motor da partida de xadrez. Centraliza regras, turno, verificação de `check`/`checkmate`, promoção e lances especiais.
-- [`src/chess/pieces`](/home/lorenzo/desenvolvimento/terminal-chess/src/chess/pieces): implementações concretas de movimento para cada tipo de peça.
-- [`src/boardgame`](/home/lorenzo/desenvolvimento/terminal-chess/src/boardgame): camada genérica de tabuleiro, posições, peças abstratas e exceções reutilizáveis.
+## Getting Started
 
-### Fluxo principal
+Clone the repository and move into the project directory:
 
-1. A aplicação instancia uma partida em [`ChessMatch.java`](/home/lorenzo/desenvolvimento/terminal-chess/src/chess/ChessMatch.java).
-2. O usuário informa a posição de origem.
-3. O sistema calcula e destaca os movimentos possíveis da peça selecionada.
-4. O usuário informa a posição de destino.
-5. O motor valida a jogada, executa o movimento, processa capturas e avalia estados especiais da partida.
-6. Em caso de promoção, a interface solicita a nova peça (`B`, `N`, `R`, `Q`).
+```bash
+git clone <repository-url>
+cd terminal-chess
+```
 
-## Regras e comportamentos implementados
-
-- Movimentação individual de rei, dama, torre, bispo, cavalo e peão.
-- Validação para impedir jogadas com peças do adversário.
-- Bloqueio de jogadas que deixem o próprio rei em `check`.
-- Detecção de `check` ao adversário após cada jogada.
-- Detecção de `checkmate` por simulação das respostas possíveis.
-- Roque pequeno e grande quando as condições da regra são atendidas.
-- `En passant` com rastreamento temporário do peão vulnerável.
-- Promoção automática para dama por padrão, com substituição opcional via entrada do jogador.
-
-## Requisitos
-
-- JDK 17 ou superior.
-- Terminal com suporte razoável a ANSI para melhor experiência visual.
-
-Observações:
-
-- O README anterior mencionava Java 8, mas isso não corresponde ao código atual.
-- Em alguns terminais de IDE, a limpeza de tela e as cores ANSI podem não funcionar perfeitamente.
-- Em Windows, terminais como Git Bash, Windows Terminal ou similares tendem a oferecer melhor compatibilidade visual.
-
-## Como executar
-
-### Compilação manual
-
-Na raiz do projeto:
+Compile the source code:
 
 ```bash
 mkdir -p out
 javac -d out $(find src -name "*.java")
 ```
 
-### Execução
+Run the game:
 
 ```bash
 java -cp out application.Program
 ```
 
-## Como jogar
+## Running the Tests
 
-Durante a partida:
+The regression suite uses only the JDK and covers the initial position, checkmate detection, en passant for both colors, castling, and promotion:
 
-- informe a origem da jogada em `Source` usando coordenadas como `e2`;
-- informe o destino em `Target` usando coordenadas como `e4`;
-- casas destacadas em azul representam movimentos possíveis da peça selecionada;
-- as peças capturadas são exibidas abaixo do tabuleiro;
-- quando houver promoção, escolha entre `B`, `N`, `R` ou `Q`.
+```bash
+mkdir -p out
+javac -d out $(find src tests -name "*.java")
+java -cp out chess.ChessMatchRegressionTest
+```
 
-## Estrutura do projeto
+## How to Play
+
+On each turn, enter the source and target squares using standard chessboard coordinates:
+
+```text
+Source: e2
+Target: e4
+```
+
+After selecting a piece, its legal destinations are highlighted in blue. The game automatically validates the move, updates captured pieces, changes turns, and evaluates check or checkmate.
+
+When a pawn reaches the opposite end of the board, choose a promotion piece:
+
+```text
+Enter piece for promotion (B/N/R/Q): Q
+```
+
+| Input | Piece |
+| :---: | --- |
+| `B` | Bishop |
+| `N` | Knight |
+| `R` | Rook |
+| `Q` | Queen |
+
+## Architecture
+
+The codebase is divided into three focused layers:
 
 ```text
 src/
-  application/
-    Program.java
-    UI.java
-  boardgame/
-    Board.java
-    BoardException.java
-    Piece.java
-    Position.java
-  chess/
-    ChessMatch.java
-    ChessException.java
-    ChessPiece.java
-    ChessPosition.java
-    Color.java
-    pieces/
-      Bishop.java
-      King.java
-      Knight.java
-      Pawn.java
-      Queen.java
-      Rook.java
+├── application/          # Terminal input, rendering, and game loop
+│   ├── Program.java
+│   └── UI.java
+├── boardgame/            # Reusable board and piece abstractions
+│   ├── Board.java
+│   ├── BoardException.java
+│   ├── Piece.java
+│   └── Position.java
+└── chess/                # Chess rules, match state, and pieces
+    ├── ChessException.java
+    ├── ChessMatch.java
+    ├── ChessPiece.java
+    ├── ChessPosition.java
+    ├── Color.java
+    └── pieces/
+        ├── Bishop.java
+        ├── King.java
+        ├── Knight.java
+        ├── Pawn.java
+        ├── Queen.java
+        └── Rook.java
 ```
 
-## Limitações atuais
+- [`application`](src/application) handles user input, terminal rendering, and the main game loop.
+- [`boardgame`](src/boardgame) provides generic abstractions for boards, positions, and pieces.
+- [`chess`](src/chess) implements match state, chess rules, special moves, and validation.
 
-- O projeto não possui suíte automatizada de testes.
-- A partida é exclusivamente local, sem IA e sem multiplayer em rede.
-- Não há sistema de persistência, histórico de jogadas ou exportação PGN/FEN.
-- A interface é orientada a terminal e depende de suporte a ANSI para a melhor representação visual.
+The application starts in [`Program.java`](src/application/Program.java), while [`ChessMatch.java`](src/chess/ChessMatch.java) coordinates the game state and rule engine.
 
-## Licença
+## Rules Implemented
 
-Distribuído sob a licença MIT. Veja [`LICENSE`](/home/lorenzo/desenvolvimento/terminal-chess/LICENSE).
+- Standard movement for every chess piece
+- Turn ownership and source/target validation
+- Prevention of moves that expose the current player's king
+- Check detection after every move
+- Checkmate detection by evaluating all legal responses
+- Kingside and queenside castling
+- En passant with temporary vulnerability tracking
+- Pawn promotion to bishop, knight, rook, or queen
+
+## Current Scope
+
+Terminal Chess is designed for two players sharing the same terminal. It currently does not include:
+
+- Computer-controlled opponents
+- Online multiplayer
+- Saved matches or move history
+- PGN or FEN import/export
+
+## Contributing
+
+Contributions are welcome. Fork the repository, create a focused branch, and open a pull request with a clear description of your changes.
+
+## License
+
+This project is available under the [MIT License](LICENSE).
