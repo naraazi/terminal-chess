@@ -8,15 +8,19 @@ import chess.ChessPosition;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
-public class Program {
+public final class Program {
+    private Program() {
+    }
+
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         ChessMatch chessMatch = new ChessMatch();
         List<ChessPiece> captured = new ArrayList<>();
 
-        while (chessMatch.getCheckMate()) {
+        while (!chessMatch.isCheckmate()) {
             try {
                 UI.clearScreen();
                 UI.printMatch(chessMatch, captured);
@@ -39,19 +43,17 @@ public class Program {
                 }
                 if (chessMatch.getPromoted() != null) {
                     System.out.print("Enter piece for promotion (B/N/R/Q): ");
-                    String type = sc.nextLine().toUpperCase();
+                    String type = sc.nextLine().trim().toUpperCase(Locale.ROOT);
 
                     while (!type.equals("B") && !type.equals("N") && !type.equals("R") && !type.equals("Q")) {
                         System.out.print("Invalid value! Enter piece for promotion (B/N/R/Q): ");
-                        type = sc.nextLine().toUpperCase();
+                        type = sc.nextLine().trim().toUpperCase(Locale.ROOT);
                     }
 
                     chessMatch.replacePromotedPiece(type);
                 }
-            }
-            catch (ChessException | InputMismatchException e) {
+            } catch (ChessException | InputMismatchException e) {
                 System.out.println(e.getMessage());
-                sc.nextLine();
             }
         }
 

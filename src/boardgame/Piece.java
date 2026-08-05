@@ -14,17 +14,16 @@ public abstract class Piece {
 
     public abstract boolean[][] possibleMoves();
 
-    //template method
     public boolean possibleMove(Position position) {
         return possibleMoves()[position.getRow()][position.getColumn()];
     }
 
     public boolean isThereAnyPossibleMove() {
-        boolean[][] mat = possibleMoves();
+        boolean[][] moves = possibleMoves();
 
-        for (boolean[] booleans : mat) {
-            for (int j = 0; j < mat.length; j++) {
-                if (booleans[j]) {
+        for (boolean[] row : moves) {
+            for (boolean possible : row) {
+                if (possible) {
                     return true;
                 }
             }

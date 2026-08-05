@@ -8,16 +8,18 @@ import chess.Color;
 import java.util.Arrays;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
-public class UI {
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
-    public static final String ANSI_WHITE = "\u001B[37m";
+public final class UI {
+    private static final String ANSI_RESET = "\u001B[0m";
+    private static final String ANSI_YELLOW = "\u001B[33m";
+    private static final String ANSI_WHITE = "\u001B[37m";
+    private static final String ANSI_BLUE_BACKGROUND = "\u001B[44m";
 
-    public static final String ANSI_BLUE_BACKGROUND = "\u001B[44m";
+    private UI() {
+    }
 
-    //does not work on IDEs terminal
     public static void clearScreen() {
         System.out.print("\033[H\033[2J");
         System.out.flush();
@@ -25,13 +27,13 @@ public class UI {
 
     public static ChessPosition readChessPosition(Scanner sc) {
         try {
-            String s = sc.nextLine();
-            char column = s.charAt(0);
-            int row = Integer.parseInt(s.substring(1));
+            String input = sc.nextLine().trim().toLowerCase(Locale.ROOT);
+            char column = input.charAt(0);
+            int row = Integer.parseInt(input.substring(1));
             return new ChessPosition(column, row);
         }
         catch (RuntimeException e) {
-            throw new InputMismatchException("Error reading ChessPosition. Valid values are from a1 to h8");
+            throw new InputMismatchException("Invalid position. Enter a square from a1 to h8.");
         }
     }
 
@@ -43,10 +45,10 @@ public class UI {
         System.out.println();
         System.out.println("Turn: " + chessMatch.getTurn());
 
-        if (chessMatch.getCheckMate()) {
+        if (!chessMatch.isCheckmate()) {
             System.out.println("Waiting player: " + chessMatch.getCurrentPlayer());
 
-            if (chessMatch.getCheck()) {
+            if (chessMatch.isCheck()) {
                 System.out.println("CHECK!");
             }
         }
@@ -103,8 +105,12 @@ public class UI {
     }
 
     private static void printCapturedPieces(List<ChessPiece> captured) {
-        List<ChessPiece> white = captured.stream().filter(x -> x.getColor() == Color.WHITE).toList();
-        List<ChessPiece> black = captured.stream().filter(x -> x.getColor() == Color.BLACK).toList();
+        List<ChessPiece> white = captured.stream()
+                .filter(piece -> piece.getColor() == Color.WHITE)
+                .toList();
+        List<ChessPiece> black = captured.stream()
+                .filter(piece -> piece.getColor() == Color.BLACK)
+                .toList();
 
         System.out.println("Captured pieces:");
         System.out.print("White: ");

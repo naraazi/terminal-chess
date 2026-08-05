@@ -20,6 +20,6 @@ public record ChessPosition(char column, int row) {
 
     @Override
     public String toString() {
-        return "" + column + row;
+        return "%c%d".formatted(column, row);
     }
 }

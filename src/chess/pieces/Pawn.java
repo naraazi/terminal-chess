@@ -6,7 +6,7 @@ import chess.ChessMatch;
 import chess.ChessPiece;
 import chess.Color;
 
-public class Pawn extends ChessPiece {
+public final class Pawn extends ChessPiece {
     private final ChessMatch chessMatch;
 
     public Pawn(Board board, Color color, ChessMatch chessMatch) {
@@ -16,95 +16,77 @@ public class Pawn extends ChessPiece {
 
     @Override
     public boolean[][] possibleMoves() {
-        boolean[][] mat = new boolean[getBoard().getRows()][getBoard().getColumns()];
-        Position p = new Position(0, 0);
+        boolean[][] moves = new boolean[getBoard().getRows()][getBoard().getColumns()];
+        int direction = getColor() == Color.WHITE ? -1 : 1;
 
-        if (getColor() == Color.WHITE) {
-            //one move up
-            p.setValues(position.getRow() - 1, position.getColumn());
-            if (getBoard().positionExists(p) && !getBoard().thereIsAPiece(p)) {
-                mat[p.getRow()][p.getColumn()] = true;
-            }
+        Position oneStep = new Position(position.getRow() + direction, position.getColumn());
+        if (getBoard().positionExists(oneStep) && !getBoard().thereIsAPiece(oneStep)) {
+            moves[oneStep.getRow()][oneStep.getColumn()] = true;
 
-            //two move up
-            p.setValues(position.getRow() - 2, position.getColumn());
-            Position p2 = new Position(position.getRow() - 1, position.getColumn());
-            if (getBoard().positionExists(p) && !getBoard().thereIsAPiece(p) && getBoard().positionExists(p2) && !getBoard().thereIsAPiece(p2) && getMoveCount() == 0) {
-                mat[p.getRow()][p.getColumn()] = true;
-            }
-
-            //one move leftUp
-            p.setValues(position.getRow() - 1, position.getColumn() - 1);
-            if (getBoard().positionExists(p) && isThereOpponentPiece(p)) {
-                mat[p.getRow()][p.getColumn()] = true;
-            }
-
-            //one move rightUp
-            p.setValues(position.getRow() - 1, position.getColumn() + 1);
-            if (getBoard().positionExists(p) && isThereOpponentPiece(p)) {
-                mat[p.getRow()][p.getColumn()] = true;
-            }
-
-            //en passant -> white
-            if (position.getRow() == 3) {
-                Position left = new Position(position.getRow(), position.getColumn() - 1);
-                Position right = new Position(position.getRow(), position.getColumn() + 1);
-
-                if (getBoard().positionExists(left) && isThereOpponentPiece(left) && getBoard().piece(left) == chessMatch.getEnPassantVulnerable()) {
-                    mat[left.getRow() - 1][left.getColumn()] = true;
-                }
-                if (getBoard().positionExists(right) && isThereOpponentPiece(right) && getBoard().piece(right) == chessMatch.getEnPassantVulnerable()) {
-                    mat[left.getRow() - 1][right.getColumn()] = true;
-                }
-            }
-        }
-        else {
-            //one move down
-            p.setValues(position.getRow() + 1, position.getColumn());
-            if (getBoard().positionExists(p) && !getBoard().thereIsAPiece(p)) {
-                mat[p.getRow()][p.getColumn()] = true;
-            }
-
-            //two move down
-            p.setValues(position.getRow() + 2, position.getColumn());
-            Position p2 = new Position(position.getRow() + 1, position.getColumn());
-            if (getBoard().positionExists(p) && !getBoard().thereIsAPiece(p) && getBoard().positionExists(p2) && !getBoard().thereIsAPiece(p2) && getMoveCount() == 0) {
-                mat[p.getRow()][p.getColumn()] = true;
-            }
-
-            //one move leftDown
-            p.setValues(position.getRow() + 1, position.getColumn() - 1);
-            if (getBoard().positionExists(p) && isThereOpponentPiece(p)) {
-                mat[p.getRow()][p.getColumn()] = true;
-            }
-
-            //one move rightDown
-            p.setValues(position.getRow() + 1, position.getColumn() + 1);
-            if (getBoard().positionExists(p) && isThereOpponentPiece(p)) {
-                mat[p.getRow()][p.getColumn()] = true;
+            Position twoSteps = new Position(position.getRow() + 2 * direction, position.getColumn());
+            if (getMoveCount() == 0
+                    && getBoard().positionExists(twoSteps)
+                    && !getBoard().thereIsAPiece(twoSteps)) {
+                moves[twoSteps.getRow()][twoSteps.getColumn()] = true;
             }
         }
 
-        //en passant -> black
-        if (position.getRow() == 4) {
-            Position left = new Position(position.getRow(), position.getColumn() - 1);
-            Position right = new Position(position.getRow(), position.getColumn() + 1);
+        addRegularCaptures(moves, direction);
+        addEnPassantMoves(moves, direction);
+        return moves;
+    }
 
-            if (getBoard().positionExists(left) && isThereOpponentPiece(left) && getBoard().piece(left) == chessMatch.getEnPassantVulnerable()) {
-                mat[left.getRow() + 1][left.getColumn()] = true;
-            }
-            if (getBoard().positionExists(right) && isThereOpponentPiece(right) && getBoard().piece(right) == chessMatch.getEnPassantVulnerable()) {
-                mat[left.getRow() + 1][left.getColumn()] = true;
+    @Override
+    public boolean[][] attackMoves() {
+        boolean[][] attacks = new boolean[getBoard().getRows()][getBoard().getColumns()];
+        int direction = getColor() == Color.WHITE ? -1 : 1;
+
+        for (int columnOffset : new int[]{-1, 1}) {
+            Position target = new Position(
+                    position.getRow() + direction,
+                    position.getColumn() + columnOffset
+            );
+            if (getBoard().positionExists(target)) {
+                attacks[target.getRow()][target.getColumn()] = true;
             }
         }
 
-        return mat;
+        return attacks;
+    }
+
+    private void addRegularCaptures(boolean[][] moves, int direction) {
+        for (int columnOffset : new int[]{-1, 1}) {
+            Position target = new Position(
+                    position.getRow() + direction,
+                    position.getColumn() + columnOffset
+            );
+            if (getBoard().positionExists(target) && isThereOpponentPiece(target)) {
+                moves[target.getRow()][target.getColumn()] = true;
+            }
+        }
+    }
+
+    private void addEnPassantMoves(boolean[][] moves, int direction) {
+        int enPassantRow = getColor() == Color.WHITE ? 3 : 4;
+        if (position.getRow() != enPassantRow) {
+            return;
+        }
+
+        for (int columnOffset : new int[]{-1, 1}) {
+            Position adjacent = new Position(
+                    position.getRow(),
+                    position.getColumn() + columnOffset
+            );
+
+            if (getBoard().positionExists(adjacent)
+                    && getBoard().piece(adjacent) == chessMatch.getEnPassantVulnerable()) {
+                moves[position.getRow() + direction][adjacent.getColumn()] = true;
+            }
+        }
     }
 
     @Override
     public String toString() {
-        return "♟"; //unicode black Pawn
-        //return "♙"; -> unicode white Pawn
-        //return "P"; -> String
+        return "♟";
     }
 }

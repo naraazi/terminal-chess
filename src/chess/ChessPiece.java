@@ -33,9 +33,43 @@ public abstract class ChessPiece extends Piece {
         return ChessPosition.fromPosition(position);
     }
 
-    protected boolean isThereOpponentPiece(Position position) {
-        ChessPiece p = (ChessPiece) getBoard().piece(position);
+    public boolean[][] attackMoves() {
+        return possibleMoves();
+    }
 
-        return p != null && p.getColor() != color;
+    protected boolean canMoveTo(Position position) {
+        ChessPiece piece = (ChessPiece) getBoard().piece(position);
+        return piece == null || piece.getColor() != color;
+    }
+
+    protected boolean isThereOpponentPiece(Position position) {
+        ChessPiece piece = (ChessPiece) getBoard().piece(position);
+
+        return piece != null && piece.getColor() != color;
+    }
+
+    protected boolean[][] slidingMoves(int[][] directions) {
+        boolean[][] moves = new boolean[getBoard().getRows()][getBoard().getColumns()];
+
+        for (int[] direction : directions) {
+            Position candidate = new Position(
+                    position.getRow() + direction[0],
+                    position.getColumn() + direction[1]
+            );
+
+            while (getBoard().positionExists(candidate) && !getBoard().thereIsAPiece(candidate)) {
+                moves[candidate.getRow()][candidate.getColumn()] = true;
+                candidate.setValues(
+                        candidate.getRow() + direction[0],
+                        candidate.getColumn() + direction[1]
+                );
+            }
+
+            if (getBoard().positionExists(candidate) && isThereOpponentPiece(candidate)) {
+                moves[candidate.getRow()][candidate.getColumn()] = true;
+            }
+        }
+
+        return moves;
     }
 }
